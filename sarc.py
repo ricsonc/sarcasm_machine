@@ -33,7 +33,7 @@ with open('sarcasm_v2.csv', 'rb') as csvfile:
 			# THIS MAY BE WRONG -- POSSIBLY we only want the response text
 			for word in comment:
 				word = word.lower().strip('`~!@#$%^&*()-_=+[]}{\\|\'\";:/?.>,<\n')
-				if word not in stopWords:
+				if word not in stopWords and word != '':
 					if word in sarcDict:
 						sarcDict[word] += 1
 					else:
@@ -50,7 +50,7 @@ with open('sarcasm_v2.csv', 'rb') as csvfile:
 		if row[1] == 'notsarc':
 			for word in comment:
 				word = word.lower().strip('`~!@#$%^&*()-_=+[]}{\\|\'\";:/?.>,<\n')
-				if word not in stopWords:
+				if word not in stopWords and word != '':
 					if word in notSarcDict:
 						notSarcDict[word] += 1
 					else:
