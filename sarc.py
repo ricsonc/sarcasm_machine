@@ -7,26 +7,26 @@ csv.field_size_limit(sys.maxsize)
 sarcDict = {}
 notSarcDict = {}
 
-sw = open('ml_hw1/hw1_dataset_nb/sw.txt', 'r')
+sw = open('sw.txt', 'r')
 stopWords = [x.strip('\n').lower() for x in sw.readlines()]
 sw.close()
 
 rowNum = 0
 with open('sarcasm_v2.csv', 'rb') as csvfile:
-	sarcReader = csv.reader(csvfile, delimiter=',', quotechar='|')
+	sarcReader = csv.reader(csvfile, delimiter=',', quotechar='\"')
 	for row in sarcReader:
 		if rowNum == 0:
 			rowNum += 1
 			continue
-		if rowNum == 1:
-			print row
-			print row[4]
-			print row[5].split(' ')
+		# if rowNum == 70:
+		# 	print row
+		# 	print row[4]
+		# 	print row[4].split(' ')
 		# # print rowNum
-		# rowNum += 1
+		rowNum += 1
 
 	# Naive one-word sarcasm dictionary
-		comment = row[5].split(' ')
+		comment = row[4].split(' ')
 
 		# Search sarcastic reviews
 		if row[1] == 'sarc':
@@ -63,7 +63,7 @@ with open('sarcasm_v2.csv', 'rb') as csvfile:
 			# 		else:
 			# 			notSarcDict[word] = 1
 
-#	print 'SARCDICT'
-#	print sarcDict
-#	print 'NOTSARCDICT'
-#	print notSarcDict
+	print 'SARCDICT'
+	print sarcDict
+	print 'NOTSARCDICT'
+	print notSarcDict
