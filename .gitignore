@@ -1,2 +1,7 @@
 ~*
-corpus/*
+corpus/*.txt
+corpus/*.rar
+corpus/*.html
+corpus/*.xlsx
+corpus/Regular/*
+corpus/Ironic/*
