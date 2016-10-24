@@ -1,4 +1,10 @@
 get labeled data 
 get unlabeled data
-implement the neural network
+implement the (deep bidirectional ltsm) neural network
+
+
+ideas:
+using precomputed unsupervised word embedding
 use part of speech as a feature
+
+character level sarcasm detection
