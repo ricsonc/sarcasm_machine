@@ -120,4 +120,4 @@ def testvars(vars, session):
     xs, ys = training_data(5)
     return session.run([vars], feed_dict ={i_:np.transpose(np.array(xs)), y_:ys})
 
-print testvar([w1, w2, w3, b1, b2, y, y_, CE], session)
+print testvars([w1, w2, w3, b1, b2, y, y_, CE], session)
