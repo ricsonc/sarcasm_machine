@@ -1,5 +1,9 @@
 import csv
 import sys
+import re
+# import enchant
+
+# FUTURE THINGS: spell checker? splitting words that contain punctuation?
 
 # sketchy temp fix
 csv.field_size_limit(sys.maxsize)
@@ -19,19 +23,23 @@ with open('sarcasm_v2.csv', 'rb') as csvfile:
 			rowNum += 1
 			continue
 		# if rowNum == 70:
-		# 	print row
-		# 	print row[4]
-		# 	print row[4].split(' ')
+		#  	print row
+		#  	print row[4]
+		#  	print row[4].split(' ')
+		#  	print re.split(' |\.|\,|\!|\?', row[4])
 		# # print rowNum
 		rowNum += 1
 
 	# Naive one-word sarcasm dictionary
-		comment = row[4].split(' ')
+		# comment = re.split(' ', row[4])
+		comment = re.split(' |\.|\,|\!|\?|\/|\(|\)|\-|\_|\\\\|\@|\#|\$|\%|\^|\&|\*|\=|\+|\[|\]|\{|\}|\;|\:|\>|\<|\~', row[4])
 
 		# Search sarcastic reviews
 		if row[1] == 'sarc':
 			# THIS MAY BE WRONG -- POSSIBLY we only want the response text
 			for word in comment:
+				if word.find('emoticon') != -1:
+					print word
 				word = word.lower().strip('`~!@#$%^&*()-_=+[]}{\\|\'\";:/?.>,<\n')
 				if word not in stopWords and word != '':
 					if word in sarcDict:
@@ -63,7 +71,7 @@ with open('sarcasm_v2.csv', 'rb') as csvfile:
 			# 		else:
 			# 			notSarcDict[word] = 1
 
-	print 'SARCDICT'
-	print sarcDict
-	print 'NOTSARCDICT'
-	print notSarcDict
+	# print 'SARCDICT'
+	# print sarcDict
+	# print 'NOTSARCDICT'
+	# print notSarcDict
