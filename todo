@@ -7,3 +7,4 @@ ideas:
 using precomputed unsupervised word embedding
 use part of speech as a feature
 character level sarcasm detection
+maybe correlate misspelly-ness with sarcasm?
