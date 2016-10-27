@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 import csv
 import sys
 import re
@@ -75,3 +77,4 @@ with open('sarcasm_v2.csv', 'rb') as csvfile:
 	# print sarcDict
 	# print 'NOTSARCDICT'
 	# print notSarcDict
+
