@@ -3,9 +3,8 @@ import numpy as np
 import gensim,logging
 from gensim.models import Word2Vec
 
-
 '''
-MAX_ATTEMPTS = 50
+MAX_ATTEMPTS = 400
 tweets = []
 
 APP_KEY = 't8UAnOlePi3XIiB8RBFF4jQ8a'
@@ -29,19 +28,22 @@ for i in xrange(MAX_ATTEMPTS):
 		tweet_text = tweet['text'].encode('utf-8')
 		tweets.append(tweet_text)
 	print result['search_metadata']
-	next_result_url_params = result['search_metadata']['next_results']
-	next_max_id = next_result_url_params.split('max_id=')[1].split('&')[0]
-
-
+	try:
+		next_result_url_params = result['search_metadata']['next_results']
+		next_max_id = next_result_url_params.split('max_id=')[1].split('&')[0]
+	except:
+		break
 tempDict = dict()
 tempDict['tweets'] = tweets
 #result = twitter.search(q='#sarcastic AND -filter:retweets AND -filter:replies', lang='en',count = 100)
 np.save('temp.npy',tempDict)
 '''
-result = np.load('temp.npy').item()
+
+result = np.load('temp.npy')
+
+
 count = 0
-print len(result['tweets'])
-tweets = result['tweets']
+tweets = result
 tweets_no_pic = []
 tweets_no_pic_parsed = []
 for i in tweets:
@@ -49,8 +51,8 @@ for i in tweets:
 		count+=1
 		tweets_no_pic.append(i)
 		tweets_no_pic_parsed.append(i.split())
-#need parsing here
+
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 model = Word2Vec(tweets_no_pic_parsed)
-print model['really']
+print model['fantasy']
