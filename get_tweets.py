@@ -43,14 +43,9 @@ result = np.load('temp.npy')
 
 
 count = 0
-tweets = result
-tweets_no_pic = []
 tweets_no_pic_parsed = []
-for i in tweets:
-	if 'http' not in i:
-		count+=1
-		tweets_no_pic.append(i)
-		tweets_no_pic_parsed.append(i.split())
+for i in result:
+	tweets_no_pic_parsed.append(i.split())
 
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
