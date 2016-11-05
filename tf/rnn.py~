@@ -1,0 +1,114 @@
+#!/usr/bin/env python2
+
+import tensorflow as tf
+import random
+import numpy as np
+import random
+from tensorflow.python.ops import functional_ops
+
+const = tf.constant_initializer
+scope = tf.variable_scope
+
+def clipped_log(x):
+    tf.log(tf.clip_by_value(V, 1E-10, 1E10))
+
+def linear(x):
+    W = tf.get_variable(name = 'W', initializer=const(1.0))
+    b = tf.get_variable(name = 'b', initializer=const(0.0))
+    return W*x+b
+
+class RNN_model(object):
+    def __init__(self):
+        self.inputs = tf.placeholder(tf.float32, [None])
+        self.label = tf.placeholder(tf.float32, 1) 
+        self.output = self.assemble()
+        self.loss_ = self.loss()
+       
+    def feed(self, data, labels):
+        pass
+    
+    def rnn_instep(self, x, h):
+        with scope("internal_weights"):
+            h_ = tf.nn.tanh(linear(x) + linear(h))
+        return h_
+        
+    def roll_rnn(self):
+        with scope("internal_states"):
+            states = tf.scan(self.rnn_instep, self.inputs, initializer=const(1.0),
+                             name = 'states')
+        with scope("output_weights"):
+            outputs = linear(states)
+        return outputs
+        
+    def conglomerator(self, outputs):
+        with scope("conglomerate"):
+            print outputs.shape
+            print outputs.shape()
+            print outputs.get_shape()
+            Y = linear(outputs) #dim
+        return Y #name?
+       
+    def assemble(self):
+        return self.conglomerator(self.roll_rnn())
+       
+    def loss(self):
+        with tf.variable_scope("loss"):
+            cross_entropy = -(self.label*softlog(self.output) + 
+                              (1.0-self.output)*softlog(1.0-self.label))
+        return cross_entropy #name?
+            
+#def batch_loss(fn, inputs, labels):
+#    pass
+    
+    
+def gendata(n):
+    xs = []
+    ys = []
+    rolls = random.randint(10, 20)
+    for i in range(n):
+        x = [random.randint(0,1) for j in range(rolls)]
+        y = int(sum(x) < rolls/2)
+        xs.append(x)
+        ys.append(y)
+    return xs, ys
+    
+datasize = 100000
+
+train_data = zip(*gendata(datasize))
+cross_data = zip(*gendata(datasize))
+trial_data = zip(*gendata(datasize))
+
+
+#def drawsample(data):
+#    x, y = zip(*[random.choice(data) for j in range(batchsize2)])
+#    xt = np.transpose(np.array(x))
+#    return xt, y
+
+
+def drawsample(data):
+    return random.choice(data)
+
+tf_vars = tf.initialize_all_variables()
+session = tf.Session()
+session.run(tf_vars)
+
+def train(model, train_iters, printn):    
+    print 'training'
+    
+    train_step = tf.train.AdadeltaOptimizer().minimize(model.cross_entropy)
+                   
+    for i in range(train_iters):
+        sx, sy= drawsample(train_data)
+        session.run(train_step, feed_dict={model.inputs:sx, model.output:sy})
+        if not (i % printn) and i:
+            sx, sy = drawsample(train_data)
+            print session.run(model.loss,
+                              feed_dict={model.inputs:sx, model.output:sy}),
+            sx, sy = drawsample(cross_data)        
+            print session.run(model.loss,
+                              feed_dict={model.inputs:sx, model.output:sy})
+
+M = RNN_model()
+
+train(M, 100000, 100)
+            

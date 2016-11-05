@@ -15,16 +15,16 @@ def plus1_a(x):
     print s.name
     return x + s
 
-def plus1_b(x):
-    s = tf.get_variable(name = 's', initializer = 1.0)
-    print s.name
-    return x + s
-
 #without variable scopes
 def plus2_a(x):
     w1 = plus1_a(x)
     y1 = plus1_a(w1)
     return y1
+
+def plus1_b(x):
+    s = tf.get_variable(name = 's', initializer = 1.0)
+    print s.name
+    return x + s
 
 #with variable scopes
 def plus2_b(x):

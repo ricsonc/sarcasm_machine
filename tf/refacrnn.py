@@ -14,3 +14,6 @@ def run_step(x, h):
     h_ = tf.nn.tanh(linear(x) + linear(h))
     o = tf.nn.tanh(linear(h_))
     return (h_, o)
+
+
+
