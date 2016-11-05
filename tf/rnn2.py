@@ -40,11 +40,17 @@ def RNN_model(inputs):
 
     return conglomerator(roll_rnn(inputs))
 
-def loss(predictor, inputs, labels):
-    pass
+def compute_loss(predictor):
+    def loss(inputs, label):
+        with scope("loss"):
+            output = predictor(inputs)
+            cross_entropy = -(label*clipped_log(output) + 
+                              (1.0-output)*clipped_log(1.0-label))
+            return cross_entropy #name?
+    return loss
 
-def batch_loss(_):
-    pass
+def batch_loss(predictor, inputss, labels):
+    return tf.map_fn(compute_loss(predictor), _)
 
 #use tf.map_fn to batch everything
 #we need to write things as functions of inputs 
@@ -65,10 +71,6 @@ class Trainer(obect):
         
     def batch_loss(self, data):
         inputs, labels = zip(*data)
-        with scope("loss"):
-            cross_entropy = -(label*clipped_log(model.output) + 
-                              (1.0-model.output)*clipped_log(1.0-label))
-        return cross_entropy #name?
         
 class Trainer(object):
     def __init__(self, data):
