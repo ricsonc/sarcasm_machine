@@ -3,6 +3,7 @@
 import keras
 from keras.layers import *
 from keras.models import Sequential, Model
+from keras.optimizers import *
 import numpy as np
 import random
 from keras.regularizers import *
@@ -79,13 +80,32 @@ def test3():
     model.add(Dense(1, activation = 'sigmoid'))
     return model
 
-data = zip(Xs, ys)
+def test4(depth = 2): #deep BD GRU
+    condenser = TimeDistributed(Dense(20, activation = 'relu'))
+    def bd_layer(prev):
+        fwd = GRU(20, return_sequences = True, consume_less = 'gpu',
+                  dropout_W = 0.2, dropout_U = 0.2)(prev)
+        bck = GRU(20, return_sequences = True, consume_less = 'gpu', go_backwards = True,
+                  dropout_W = 0.2, dropout_U = 0.2)(prev)
+        return condenser(merge([fwd, bck], mode = 'concat'))
+
+    inputs = Input(shape=(l,d))
+    next = inputs
+    for i in range(depth):
+        next = bd_layer(next)
+    summary = GRU(20, consume_less = 'gpu')(next)
+    pred = Dense(1, activation = 'sigmoid')(summary)
+    return Model(input = inputs, output = pred)
+
+data = list(zip(Xs, ys))
 random.shuffle(data)
 Xtr, ytr = map(np.array,zip(*data[:1024]))
 Xte, yte = map(np.array,zip(*data[1024:]))
 
+RMS = RMSprop(lr = 0.001)
+
 model = test4()
-model.compile(optimizer='rmsprop',
+model.compile(optimizer = RMS,
               loss='binary_crossentropy',
               metrics=['binary_accuracy', 'fbeta_score'])
     
