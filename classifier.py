@@ -8,7 +8,6 @@ import numpy as np
 import random
 from keras.regularizers import *
 
-
 Xs = np.load('corpus_list.npy')
 #n = max(map(len, X))
 n = 300
