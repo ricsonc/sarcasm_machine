@@ -55,18 +55,6 @@ def test1():
     model.add(Dense(1, activation = 'sigmoid'))
     return model
 
-def test2():
-    model = Sequential()
-    model.add(GaussianDropout(0.02, input_shape = (l, d)))
-    model.add(Bidirectional(LSTM(10, return_sequences = True, consume_less='gpu'),
-                            merge_mode = 'concat'))
-    model.add(Dropout(0.1))
-    model.add(LSTM(1, consume_less = 'gpu', return_sequences = True))
-    model.add(Flatten())
-    model.add(Dropout(0.1))
-    model.add(Dense(10, activation = 'relu'))
-    model.add(Dense(1, activation = 'sigmoid'))
-    return model
 
 def test3():
     model = Sequential()
@@ -81,20 +69,43 @@ def test3():
     model.add(Dense(1, activation = 'sigmoid'))
     return model
 
-def test4(depth = 2): #deep BD GRU
-    condenser = TimeDistributed(Dense(20, activation = 'relu'))
-    def bd_layer(prev):
-        fwd = GRU(20, return_sequences = True, consume_less = 'gpu',
-                  dropout_W = 0.2, dropout_U = 0.2)(prev)
-        bck = GRU(20, return_sequences = True, consume_less = 'gpu', go_backwards = True,
-                  dropout_W = 0.2, dropout_U = 0.2)(prev)
-        return condenser(merge([fwd, bck], mode = 'concat'))
+def test2():
+    model = Sequential()
+    model.add(Bidirectional(LSTM(10, return_sequences = True, consume_less='gpu'),
+                            input_shape = (l, 27), merge_mode = 'concat'))
+    model.add(Dropout(0.2))
+    model.add(LSTM(1, consume_less = 'gpu', return_sequences = True))
+    model.add(Flatten())
+    model.add(Dropout(0.1))
+    model.add(Dense(10, activation = 'relu'))
+    model.add(Dense(1, activation = 'sigmoid'))
+    return model
+
+def test2_():
+    model = Sequential()
+    model.add(Bidirectional(LSTM(10, return_sequences = True, consume_less='gpu'),
+                            input_shape = (l, 27), merge_mode = 'concat'))
+    model.add(Dropout(0.1))
+    model.add(LSTM(10, consume_less = 'gpu', return_sequences = False))
+    model.add(Dense(1, activation = 'sigmoid'))
+    return model
+
+def test4(sizes = [16, 8]): #deep BD GRU
+    sizes.append(1)
+    def bd_layer(prev, dim):
+        fwd = GRU(dim, return_sequences = True, consume_less = 'gpu',
+                  dropout_W = 0.1, dropout_U = 0.1)(prev)
+        bck = GRU(dim, return_sequences = True, consume_less = 'gpu', go_backwards = True,
+                  dropout_W = 0.1, dropout_U = 0.1)(prev)
+        return Dropout(0.1)(merge([fwd, bck], mode = 'concat'))
 
     inputs = Input(shape=(l,d))
     next = inputs
-    for i in range(depth):
-        next = bd_layer(next)
-    summary = GRU(20, consume_less = 'gpu')(next)
+
+    for i, size in enumerate(sizes):
+        next = bd_layer(next, size)
+
+    summary = Dense(10, activation = 'relu')(Flatten()(next))
     pred = Dense(1, activation = 'sigmoid')(summary)
     return Model(input = inputs, output = pred)
 
@@ -105,7 +116,7 @@ Xte, yte = map(np.array,zip(*data[1024:]))
 
 RMS = RMSprop(lr = 0.001)
 
-model = test2()
+model = test4()
 model.compile(optimizer = RMS,
               loss='binary_crossentropy',
               metrics=['binary_accuracy', 'fbeta_score'])
