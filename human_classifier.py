@@ -3,7 +3,7 @@ import random
 
 sampleSize = 100
 acc = 0.0
-old = []
+old = ['sentinel']
 
 ironic = [] 
 regular = []
@@ -23,11 +23,17 @@ for file in files:
 for i in range(sampleSize):
 	irony = random.randint(0,1)
 
+	testFile = 'sentinel'
+	while testFile in old:
+		if irony:
+			testFile = random.choice(ironic)
+		else:
+			testFile = random.choice(regular)
+	old.append(testFile)
+
 	if irony:
-		testFile = random.choice(ironic)
 		f = open('corpus/Ironic/' + testFile)
 	else:
-		testFile = random.choice(regular)
 		f = open('corpus/Regular/' + testFile)
 
 	reviewFlag = 0
