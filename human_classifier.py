@@ -61,10 +61,10 @@ for i in range(sampleSize):
 			print 'Invalid response.'
 
 	if (irony + humanChoice) % 2 == 0:
-		print 'Correct!'
+		print '\n\nCorrect!\n\n'
 		acc += 1.0 / sampleSize
 	else:
-		print 'Incorrect.'
+		print '\n\nIncorrect.\n\n'
 
 	f.close()
 
