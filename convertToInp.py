@@ -4,6 +4,7 @@ import sys
 import re
 import os
 from os.path import join
+from textblob import TextBlob
 
 #import sarc as parser
 
@@ -19,6 +20,20 @@ def get_dim(word,model=tweet_model):
 	else:
 		dim = np.append(np.zeros(25),1)
 	return dim
+
+def get_polarity_word(word):
+	blob = TextBlob(word)
+	polarity = blob.sentiment.polarity
+	return polarity
+
+def get_polarity_vector(sentence):
+	sentence = parse(sentence)
+	length = len(sentence)
+	vector = np.zeros(shape=(length,1))
+	for i in xrange(length):
+		pol = get_polarity_word(sentence[i])
+		vector[i] = pol
+	return vector
 
 def get_matrix(sentence,model=tweet_model):
 	sentence = parse(sentence)
@@ -97,12 +112,38 @@ def main(ngram=0):
 			label_list.append(0)
 	return corpus_list,label_list
 
+def main_polarity():
+	ironic = os.listdir('corpus/Ironic')
+	regular = os.listdir('corpus/Regular')
+	corpus_list = []
+	for ironicFile in ironic:
+		if ironicFile.endswith('.txt'): 
+			f = open('corpus/Ironic/' + ironicFile)
+			vector = get_polarity_vector(f)
+			f.close()
+			corpus_list.append(vector)
+	for regularFile in regular:	
+		if regularFile.endswith('.txt'):
+			f = open('corpus/Regular/' + regularFile)
+			vector = get_polarity_vector(f)
+			f.close()
+			corpus_list.append(vector)
+	return corpus_list
+
+
+
+corpus_list_polarity_word = main_polarity()
+np.save('corpus_list_polarity_word',corpus_list_polarity_word)
+
+
+
+
 #corpus_list,label_list = main()
 #np.save('corpus_list',corpus_list)
 #np.save('label_list',label_list)
 
 
-corpus_list_bigram,label_list = main(ngram=2)
-np.save('corpus_list_bigram',corpus_list_bigram)
-corpus_list_trigram,label_list = main(ngram=3)
-np.save('corpus_list_trigram',corpus_list_trigram)
+#corpus_list_bigram,label_list = main(ngram=2)
+#np.save('corpus_list_bigram',corpus_list_bigram)
+#corpus_list_trigram,label_list = main(ngram=3)
+#np.save('corpus_list_trigram',corpus_list_trigram)
