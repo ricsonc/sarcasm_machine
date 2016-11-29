@@ -1,0 +1,86 @@
+#!/usr/bin/env python2
+
+import keras
+from keras.layers import *
+from keras.models import Sequential, Model
+import numpy as np
+import random
+
+Xs = np.load('corpus_list.npy')
+#n = max(map(len, X))
+n = 300
+def add_comp(vec):
+    return np.append(vec, [1])
+def add_dim(sample):
+    return map(add_comp, sample)
+Xs = map(add_dim, Xs)
+def resize(sample):
+    if len(sample) > n:
+        return sample[:n]
+    if len(sample) < n:
+        #print np.shape(sample), (n-len(sample), len(sample[0]))
+        res = np.concatenate((sample, np.zeros((n-len(sample), len(sample[0])))))
+        #print np.shape(res)
+        return res
+Xs = filter(lambda k : len(k), Xs)
+
+Xs = np.array(map(resize, Xs))
+
+ys = np.load('label_list.npy')
+Xs, ys = zip(*filter(lambda (j,k) : j is not None, zip(Xs, ys)))
+Xs = np.array(Xs)
+ys = np.array(ys)
+
+
+for i, thing in enumerate(Xs):
+    assert np.shape(thing) == (300, 27)
+
+print np.shape(Xs)
+n, l, d = np.shape(Xs)
+print np.shape(ys)
+print sum(ys)/float(len(ys))
+
+
+###
+
+model = Sequential()
+
+'''
+model.add(Flatten(input_shape = (l, 27)))
+model.add(Dropout(0.2))
+model.add(Dense(1))
+'''
+
+'''
+model.add(LSTM(8, input_dim = 27, input_length = l, return_sequences = True, consume_less='cpu'))
+model.add(Dropout(0.5))
+model.add(LSTM(32, return_sequences = False, consume_less = 'cpu'))
+model.add(Dropout(0.5))
+model.add(Dense(1))
+'''
+
+model.add(LSTM(1, input_dim = 27, input_length = l, return_sequences = True, consume_less='cpu'))
+model.add(Dropout(0.3))
+model.add(LSTM(1, return_sequences = True, consume_less = 'cpu'))
+model.add(Flatten())
+model.add(Dropout(0.3))
+model.add(Dense(1))
+
+
+###
+
+model.compile(optimizer='rmsprop',
+              loss='binary_crossentropy',
+              metrics=['accuracy'])
+
+###
+
+data = zip(Xs, ys)
+random.shuffle(data)
+Xtr, ytr = map(np.array,zip(*data[:1024]))
+Xte, yte = map(np.array,zip(*data[1024:]))
+
+model.fit(Xtr, ytr, nb_epoch=100, batch_size=128)
+loss_and_metrics = model.evaluate(Xte, yte, batch_size=1024)
+print '\n'
+print loss_and_metrics

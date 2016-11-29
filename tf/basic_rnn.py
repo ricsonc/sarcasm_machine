@@ -121,3 +121,5 @@ def testvars(vars, session):
     return session.run([vars], feed_dict ={i_:np.transpose(np.array(xs)), y_:ys})
 
 print testvars([w1, w2, w3, b1, b2, y, y_, CE], session)
+
+
