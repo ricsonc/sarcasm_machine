@@ -29,6 +29,18 @@ def get_matrix(sentence,model=tweet_model):
 		matrix[i] = dim
 	return matrix
 
+def get_n_gram_matrix(sentence_input,n,model=tweet_model):
+	sentence = parse(sentence_input)
+	length = len(sentence)-n+1
+	if length<=0:
+		return get_matrix(sentence_input)
+	matrix = np.zeros(shape=(length,26))
+	for i in xrange(length):
+		dim = get_dim(sentence[i],model =model)
+		for ngram in xrange(n-1):
+			dim+=get_dim(sentence[i+ngram],model=model)
+		matrix[i] = dim
+	return matrix
 def parse(inp):
 	#Does not cosinder punctuation
 	reviewFlag = 0
@@ -58,7 +70,7 @@ testing_file = 'corpus/Ironic/1_1_R280644F3NWFFN.txt'
 f = open(testing_file,'r')
 print get_matrix(f,1)
 '''
-def main():
+def main(ngram=0):
 	ironic = os.listdir('corpus/Ironic')
 	regular = os.listdir('corpus/Regular')
 	corpus_list = []
@@ -66,19 +78,31 @@ def main():
 	for ironicFile in ironic:
 		if ironicFile.endswith('.txt'): 
 			f = open('corpus/Ironic/' + ironicFile)
-			matrix = get_matrix(f)
+			if ngram!=0:
+				matrix = get_n_gram_matrix(f,ngram)
+			else:
+				matrix = get_matrix(f)
 			f.close()
 			corpus_list.append(matrix)
 			label_list.append(1)
 	for regularFile in regular:	
 		if regularFile.endswith('.txt'):
 			f = open('corpus/Regular/' + regularFile)
-			matrix = get_matrix(f)
+			if ngram!=0:
+				matrix = get_n_gram_matrix(f,ngram)
+			else:
+				matrix = get_matrix(f)
 			f.close()
 			corpus_list.append(matrix)
 			label_list.append(0)
 	return corpus_list,label_list
 
-corpus_list,label_list = main()
-np.save('corpus_list',corpus_list)
-np.save('label_list',label_list)
+#corpus_list,label_list = main()
+#np.save('corpus_list',corpus_list)
+#np.save('label_list',label_list)
+
+
+corpus_list_bigram,label_list = main(ngram=2)
+np.save('corpus_list_bigram',corpus_list_bigram)
+corpus_list_trigram,label_list = main(ngram=3)
+np.save('corpus_list_trigram',corpus_list_trigram)
