@@ -38,8 +38,8 @@ for i in xrange(len(corpus_trigram)):
 
 corpus_trigram = np.delete(corpus_trigram,wrong,0)
 
-np.save('corpus_list',corpus)
-np.save('label_list',label)
-np.save('corpus_list_bigram',corpus_bigram)
-np.save('corpus_list_trigram',corpus_trigram)
-np.save('corpus_list_polarity_word',corpus_pol)
+np.save('corpus_list_fixed',corpus)
+np.save('label_list_fixed',label)
+np.save('corpus_list_bigram_fixed',corpus_bigram)
+np.save('corpus_list_trigram_fixed',corpus_trigram)
+np.save('corpus_list_polarity_word_fixed',corpus_pol)

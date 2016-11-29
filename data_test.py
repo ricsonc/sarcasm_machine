@@ -34,9 +34,9 @@ def load_files(Xfile_list, yfile, n = 20):
         Xslist.append(Xs)
     return (stack(Xslist), np.load(yfile))
 
-load_files(['corpus_list.npy',
-            'corpus_list_bigram.npy',
-            'corpus_list_trigram.npy',
-            'corpus_list_polarity.npy'],
+load_files(['corpus_list_fixed.npy',
+            'corpus_list_bigram_fixed.npy',
+            'corpus_list_trigram_fixed.npy',
+            'corpus_list_polarity_word_fixed.npy'],
            'label_list.npy',
            300)
