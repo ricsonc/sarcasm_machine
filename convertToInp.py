@@ -35,6 +35,15 @@ def get_polarity_vector(sentence):
 		vector[i] = pol
 	return vector
 
+def get_polarity_vector_twitter(sentence):
+	sentence = parse_twitter(sentence)
+	length = len(sentence)
+	vector = np.zeros(shape=(length,1))
+	for i in xrange(length):
+		pol = get_polarity_word(sentence[i])
+		vector[i] = pol
+	return vector
+
 def get_matrix(sentence,model=tweet_model):
 	sentence = parse(sentence)
 	length = len(sentence)
@@ -56,6 +65,7 @@ def get_n_gram_matrix(sentence_input,n,model=tweet_model):
 			dim+=get_dim(sentence[i+ngram],model=model)
 		matrix[i] = dim
 	return matrix
+
 def parse(inp):
 	#Does not cosinder punctuation
 	reviewFlag = 0
@@ -78,6 +88,30 @@ def parse(inp):
 					word = word.lower().strip('`~!@#$%^&*()-_=+[]}{\\|\'\";:/?.>,<\n')
 					if word != '':
 						parsed_inp.append(word)
+	return parsed_inp
+
+def parse_twitter(inp):
+	parsed_inp = []
+	line = re.split(' |\.|\,|\!|\?|\/|\(|\)|\-|\_|\\\\|\$|\%|\^|\&|\*|\=|\+|\[|\]|\{|\}|\;|\:|\>|\<|\~', inp)
+	print line
+	for word in line:
+		# if word.find('emoticon') != -1:
+			# print word
+		word = word.lower().strip('`~!$%^&*()-_=+[]}{\\|\'\";:/?.>,<\n\r')
+		# we changed @ behavior. also changed # behavior, but
+		# that might be okay since some # are presumably
+		# worth treating as real words. but strip out #sarcasm since it was
+		# used to generate the corpus and thus the trivial classfier weights
+		# #sarcasm as 1 and everything else as 0
+		if word != '' and word != '#sarcasm':
+			if word[0] == '@':
+				parsed_inp.append('@')
+			elif word[0] == '#':
+				parsed_inp.append('#')
+				if len(word) > 1:
+					parsed_inp.append(word[1:])
+			else:
+				parsed_inp.append(word)
 	return parsed_inp
 
 '''
@@ -130,12 +164,39 @@ def main_polarity():
 			corpus_list.append(vector)
 	return corpus_list
 
+def main_polarity_twitter():
+	ironicFile = open('twitDB_sarcasm.csv')
+	regularFile = open('twitDB_ragular.csv')
+	corpus_list = []
+	for line in ironicFile:
+		vector = get_polarity_vector_twitter(line)
+		corpus_list.append(vector)
+	for line in regularFile:
+		vector = get_polarity_vector_twitter(line)
+		corpus_list.append(vector)
+	ironicFile.close()
+	regularFile.close()
+
+	# for ironicFile in ironic:
+	# 	if ironicFile.endswith('.txt'): 
+	# 		f = open('corpus/Ironic/' + ironicFile)
+	# 		vector = get_polarity_vector(f)
+	# 		f.close()
+	# 		corpus_list.append(vector)
+	# for regularFile in regular:	
+	# 	if regularFile.endswith('.txt'):
+	# 		f = open('corpus/Regular/' + regularFile)
+	# 		vector = get_polarity_vector(f)
+	# 		f.close()
+	# 		corpus_list.append(vector)
+	return corpus_list
 
 
 #corpus_list_polarity_word = main_polarity()
 #np.save('corpus_list_polarity_word',corpus_list_polarity_word)
 
-
+twitter_corpus_list_polarity_word = main_polarity_twitter()
+np.save('twitter_corpus_list_polarity_word',twitter_corpus_list_polarity_word)
 
 
 corpus_list,label_list = main()
