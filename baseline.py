@@ -16,13 +16,6 @@ execfile('load_data.py')
 Xtr = np.array(map(lambda x:x.flatten(), Xtr))
 Xte = np.array(map(lambda x:x.flatten(), Xte))
 
-'''
-P = PCA(n_components = 100)
-P.fit(Xtr)
-Xtr = P.transform(Xtr)
-Xte = P.transform(Xte)
-'''
-
 #hyperparameterization tuning loop
 #note that this does not do any better ...
 P = PCA()
@@ -33,13 +26,16 @@ parameters = {'log__penalty': ['l1','l2'],
               'pca__n_components' : geom(0.01,loc=0.0),
               'pca__whiten' : [True,False]}
 H = RandomizedSearchCV(pipe, parameters, n_iter = 50, verbose = 10)
-
 H.fit(Xtr, ytr)
 print H.score(Xte,yte)
 print H.score(Xtr,ytr)
 
 
-'''
+P = PCA(n_components = 100)
+P.fit(Xtr)
+Xtr = P.transform(Xtr)
+Xte = P.transform(Xte)
+
 print 'logistic'
 L = LogisticRegression()
 L.fit(Xtr, ytr)
@@ -63,4 +59,3 @@ K = KNeighborsClassifier(9)
 K.fit(Xtr,ytr)
 print K.score(Xte,yte)
 print K.score(Xtr,ytr)
-'''
