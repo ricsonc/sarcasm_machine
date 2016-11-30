@@ -35,6 +35,15 @@ def get_polarity_vector_twitter(sentence):
 		vector[i] = pol
 	return vector
 
+def get_twitter_matrix(sentence,model=tweet_model):
+	sentence = parse_twitter(sentence)
+	length = len(sentence)
+	matrix = np.zeros(shape=(length,26)) #26 is the word dim + dummy dim for if the word in dict
+	for i in xrange(length):
+		dim = get_dim(sentence[i],model = model)
+		matrix[i] = dim
+	return matrix
+
 def get_matrix(sentence,model=tweet_model):
 	sentence = parse(sentence)
 	length = len(sentence)
@@ -60,7 +69,6 @@ def get_n_gram_matrix(sentence_input,n,model=tweet_model):
 def parse_twitter(inp):
 	parsed_inp = []
 	line = re.split(' |\.|\,|\!|\?|\/|\(|\)|\-|\_|\\\\|\$|\%|\^|\&|\*|\=|\+|\[|\]|\{|\}|\;|\:|\>|\<|\~', inp)
-	print line
 	for word in line:
 		# if word.find('emoticon') != -1:
 			# print word
@@ -81,10 +89,26 @@ def parse_twitter(inp):
 				parsed_inp.append(word)
 	return parsed_inp
 
+def main_vectorize_twitter():
+	ironicFile = open('twitDB_sarcasm.csv')
+	regularFile = open('twitDB_regular.csv')
+	corpus_list = []
+	label_list = []
+	for line in ironicFile:
+		vector = get_twitter_matrix(line)
+		corpus_list.append(vector)
+		label_list.append(1)
+	for line in regularFile:
+		vector = get_twitter_matrix(line)
+		corpus_list.append(vector)
+		label_list.append(0)
+	ironicFile.close()
+	regularFile.close()
+	return corpus_list,label_list
 
 def main_polarity_twitter():
 	ironicFile = open('twitDB_sarcasm.csv')
-	regularFile = open('twitDB_ragular.csv')
+	regularFile = open('twitDB_regular.csv')
 	corpus_list = []
 	for line in ironicFile:
 		vector = get_polarity_vector_twitter(line)
@@ -109,16 +133,10 @@ def main_polarity_twitter():
 	# 		corpus_list.append(vector)
 	return corpus_list
 
-twitter_corpus_list_polarity_word = main_polarity_twitter()
-np.save('twitter_corpus_list_polarity_word',twitter_corpus_list_polarity_word)
+#twitter_corpus_list_polarity_word = main_polarity_twitter()
+#np.save('twitter_corpus_list_polarity_word',twitter_corpus_list_polarity_word)
 
 
-#corpus_list,label_list = main()
-#np.save('corpus_list',corpus_list)
-#np.save('label_list',label_list)
-
-
-#corpus_list_bigram,label_list = main(ngram=2)
-#np.save('corpus_list_bigram',corpus_list_bigram)
-#corpus_list_trigram,label_list = main(ngram=3)
-#np.save('corpus_list_trigram',corpus_list_trigram)
+twitter_corpus_vecinp, twitter_corpus_label = main_vectorize_twitter()
+np.save('twitter_corpus_vecinp',twitter_corpus_vecinp)
+np.save('twitter_corpus_label',twitter_corpus_label)
