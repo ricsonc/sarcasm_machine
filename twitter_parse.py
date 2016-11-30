@@ -1,60 +1,62 @@
-import os
+import numpy as np
+import gensim,logging
+import sys
 import re
+import os
+from os.path import join
+from textblob import TextBlob
 
-def parse_amazon(inp):
-	#Does not cosinder punctuation
-	reviewFlag = 0
-	parsed_inp = []
-	for row in inp:
-		# print row
-		# look for the start of the actual review...
-		if row == '<REVIEW>\n':
-			reviewFlag = 1
-			continue
-			# print 'hi'
-		# then start parsing
-		if reviewFlag == 1:
-			if row != '</REVIEW>':
-				line = re.split(' |\.|\,|\!|\?|\/|\(|\)|\-|\_|\\\\|\@|\#|\$|\%|\^|\&|\*|\=|\+|\[|\]|\{|\}|\;|\:|\>|\<|\~', row)
-				# print line
-				for word in line:
-					# if word.find('emoticon') != -1:
-						# print word
-					word = word.lower().strip('`~!@#$%^&*()-_=+[]}{\\|\'\";:/?.>,<\n')
-					if word != '':
-						parsed_inp.append(word)
-	return parsed_inp
+#import sarc as parser
 
-def main_polarity():
-	ironic = os.listdir('corpus/Ironic')
-	regular = os.listdir('corpus/Regular')
-	corpus_list = []
-	for ironicFile in ironic:
-		if ironicFile.endswith('.txt'): 
-			f = open('corpus/Ironic/' + ironicFile)
-			vector = get_polarity_vector(f)
-			f.close()
-			corpus_list.append(vector)
-	for regularFile in regular:	
-		if regularFile.endswith('.txt'):
-			f = open('corpus/Regular/' + regularFile)
-			vector = get_polarity_vector(f)
-			f.close()
-			corpus_list.append(vector)
-	return corpus_list
 
-# ironic = os.listdir('corpus/Ironic')
-# regular = os.listdir('corpus/Regular')
-# corpus_list = []
-# for ironicFile in ironic:
-# 	if ironicFile.endswith('.txt'): 
-# 		f = open('corpus/Ironic/' + ironicFile)
-# 		parsed = parse_amazon(f)
+tweet_model = gensim.models.Word2Vec.load_word2vec_format('glove.converted.txt', binary=False)
+#general_model = Word2Vec.load('glove.twitter.27B.25d.txt')
 
-# print 'A parsed Amazon review:'
-# print parsed
 
-# we want this to be given a line, which will be a tweet
+
+def get_dim(word,model=tweet_model):
+	if word in model:
+		dim = np.append(model[word],0)
+	else:
+		dim = np.append(np.zeros(25),1)
+	return dim
+
+def get_polarity_word(word):
+	blob = TextBlob(word)
+	polarity = blob.sentiment.polarity
+	return polarity
+
+def get_polarity_vector_twitter(sentence):
+	sentence = parse_twitter(sentence)
+	length = len(sentence)
+	vector = np.zeros(shape=(length,1))
+	for i in xrange(length):
+		pol = get_polarity_word(sentence[i])
+		vector[i] = pol
+	return vector
+
+def get_matrix(sentence,model=tweet_model):
+	sentence = parse(sentence)
+	length = len(sentence)
+	matrix = np.zeros(shape=(length,26)) #26 is the word dim + dummy dim for if the word in dict
+	for i in xrange(length):
+		dim = get_dim(sentence[i],model = model)
+		matrix[i] = dim
+	return matrix
+
+def get_n_gram_matrix(sentence_input,n,model=tweet_model):
+	sentence = parse(sentence_input)
+	length = len(sentence)-n+1
+	if length<=0:
+		return get_matrix(sentence_input)
+	matrix = np.zeros(shape=(length,26))
+	for i in xrange(length):
+		dim = get_dim(sentence[i],model =model)
+		for ngram in xrange(n-1):
+			dim+=get_dim(sentence[i+ngram],model=model)
+		matrix[i] = dim
+	return matrix
+
 def parse_twitter(inp):
 	parsed_inp = []
 	line = re.split(' |\.|\,|\!|\?|\/|\(|\)|\-|\_|\\\\|\$|\%|\^|\&|\*|\=|\+|\[|\]|\{|\}|\;|\:|\>|\<|\~', inp)
@@ -79,15 +81,44 @@ def parse_twitter(inp):
 				parsed_inp.append(word)
 	return parsed_inp
 
-ironicFile = open('twitDB_sarcasm.csv')
-# for line in ironicFile:
-# 	parsed = parse_twitter(line)
-# 	print parsed
-line = ironicFile.readline()
-print parse_twitter(line)
-line = ironicFile.readline()
-print parse_twitter(line)
-ironicFile.close()
 
-# lab_user@CSB-CVC-00:~/Downloads/sarcasm_machine$ python twitter_parse.py 
-# ['while', 'from', 'a', 'purely', 'academic', 'standpoint', 'this', 'book', 'is', 'informative', 'interesting', 'and', 'overall', 'excellently', 'written', 'it', 'has', 'a', 'far', 'greater', 'purpose', 'than', 'simply', 'to', 'satisfy', 'idle', 'curiosity', 'monkeys', 'and', 'apes', 'exist', 'as', 'one', 'of', 'the', 'greatest', 'threats', 'to', 'mankind', 'i', 'submit', 'as', 'evidence', 'the', 'multiple', 'cases', 'of', 'chimps', 'just', 'flipping', 'out', 'and', 'going', 'bananas', 'on', 'their', 'owners', 'often', 'biting', 'off', 'noses', 'fingers', 'and', 'testes', 'or', 'even', 'killing', 'their', 'comparatively', 'helpless', 'victims', 'a', '90', 'pound', 'chimp', 'is', 'more', 'than', 'a', 'match', 'for', 'most', 'fully', 'grown', 'men', 'capuchins', 'while', 'seemingly', 'innocuous', 'due', 'to', 'their', 'diminutive', 'stature', 'and', 'cute', 'appearance', 'are', 'possibly', 'the', 'worst', 'of', 'the', 'bunch', 'disturbingly', 'self', 'aware', 'capuchins', 'as', 'described', 'in', 'this', 'book', 'are', 'probably', 'the', 'most', 'intelligent', 'of', 'the', 'new', 'world', 'monkeys', 'possessing', 'exceptionally', 'large', 'brains', 'for', 'their', 'body', 'size', 'second', 'only', 'to', 'humans', 'in', 'addition', 'michelle', 'press', 'does', 'an', 'excellent', 'job', 'of', 'describing', 'some', 'of', 'the', 'more', 'frightening', 'actions', 'of', 'these', 'simian', 'killing', 'machines', 'including', 'forming', 'totem', 'poles', 'of', 'up', 'to', 'four', 'monkeys', 'piled', 'on', 'top', 'of', 'each', 'other', 'as', 'they', 'converge', 'on', 'their', 'doomed', 'prey', 'i', 'encourage', 'anyone', 'at', 'all', 'concerned', 'about', 'the', 'growing', 'threat', 'of', 'capuchin', 'dominance', 'to', 'read', 'this', 'book', 'in', 'order', 'to', 'stem', 'the', 'tide', 'of', 'the', 'marmoset', 'menace', 'the', 'next', 'person', 'they', 'go', 'ape', 'on', 'could', 'be', 'you']
+def main_polarity_twitter():
+	ironicFile = open('twitDB_sarcasm.csv')
+	regularFile = open('twitDB_ragular.csv')
+	corpus_list = []
+	for line in ironicFile:
+		vector = get_polarity_vector_twitter(line)
+		corpus_list.append(vector)
+	for line in regularFile:
+		vector = get_polarity_vector_twitter(line)
+		corpus_list.append(vector)
+	ironicFile.close()
+	regularFile.close()
+
+	# for ironicFile in ironic:
+	# 	if ironicFile.endswith('.txt'): 
+	# 		f = open('corpus/Ironic/' + ironicFile)
+	# 		vector = get_polarity_vector(f)
+	# 		f.close()
+	# 		corpus_list.append(vector)
+	# for regularFile in regular:	
+	# 	if regularFile.endswith('.txt'):
+	# 		f = open('corpus/Regular/' + regularFile)
+	# 		vector = get_polarity_vector(f)
+	# 		f.close()
+	# 		corpus_list.append(vector)
+	return corpus_list
+
+twitter_corpus_list_polarity_word = main_polarity_twitter()
+np.save('twitter_corpus_list_polarity_word',twitter_corpus_list_polarity_word)
+
+
+#corpus_list,label_list = main()
+#np.save('corpus_list',corpus_list)
+#np.save('label_list',label_list)
+
+
+#corpus_list_bigram,label_list = main(ngram=2)
+#np.save('corpus_list_bigram',corpus_list_bigram)
+#corpus_list_trigram,label_list = main(ngram=3)
+#np.save('corpus_list_trigram',corpus_list_trigram)
