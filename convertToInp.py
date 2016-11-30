@@ -132,15 +132,15 @@ def main_polarity():
 
 
 
-corpus_list_polarity_word = main_polarity()
-np.save('corpus_list_polarity_word',corpus_list_polarity_word)
+#corpus_list_polarity_word = main_polarity()
+#np.save('corpus_list_polarity_word',corpus_list_polarity_word)
 
 
 
 
-#corpus_list,label_list = main()
+corpus_list,label_list = main()
 #np.save('corpus_list',corpus_list)
-#np.save('label_list',label_list)
+np.save('label_list',label_list)
 
 
 #corpus_list_bigram,label_list = main(ngram=2)
