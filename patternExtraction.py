@@ -99,7 +99,6 @@ def findPatterns(HFWdict,CWdict):
 	for pattern in patternDict:
 		if patternDict[pattern]>=20:
 			freqPatternDict[pattern] = patternDict[pattern]
-	print len(freqPatternDict)
 	return freqPatternDict
 
 def get_pattern(sentence,HFWdict,CWdict):
@@ -135,16 +134,63 @@ def get_pattern(sentence,HFWdict,CWdict):
 #patterns = findPatterns(HFWdict,CWdict)
 
 def exactMatch(pattern,tag):
-	return pattern in " ".join(tag)
+	return (pattern in (" ".join(tag)))
 
 def sparseMatch(pattern,tag):
 	pattern = pattern.split(" ")
-	
+	i = 0
+	j = 0
+	falseCounter = 0
+	while (i<len(tag)) and (falseCounter<2) and (j<len(pattern)):
+		if tag[i]==pattern[j]:
+			i+=1
+			j+=1
+		else:
+			falseCounter+=1
+			i+=1
+			while (i<len(tag)):
+				if tag[i]!=pattern[j]:
+					i+=1
+				else:
+					i+=1
+					j+=1
+					break
+	if j==len(pattern):
+		return (1,0.1) #alpha=0.1
+	else:
+		return (0,0)
 
-	return (1,0.5)
+def incomMatchHelper(word,tag,i):
+	while i<len(tag):
+		if tag[i]==word:
+			return True
+		else:
+			i+=1
+	return False
 
 def incomMatch(pattern,tag):
-	return (1,0.5)
+	pattern = pattern.split(" ")
+	matching = 0
+	i = 0
+	j = 0
+	while (i<len(tag)) and (j<len(pattern)):
+		if tag[i]==pattern[j]:
+			i+=1
+			j+=1
+			matching+=1
+		else:
+			i+=1
+			if incomMatchHelper(pattern[j],tag,i):
+				i+=1
+				j+=1
+				matching+=1
+			else:
+				j+=1
+	if matching==0:
+		return (0,0)
+	else:
+		return (1,float(matching)/len(pattern)*0.1)
+
 
 def get_pattern_vector(f,sortedPatternDict,HFWdict,CWdict,keylist):
 	sentence = parse_nopunc(f)
@@ -156,7 +202,7 @@ def get_pattern_vector(f,sortedPatternDict,HFWdict,CWdict,keylist):
 		if word in CWdict:
 			tag.append('CW')
 	for i in keylist:
-		pattern = sortedPatternDict[i]
+		pattern = i
 		if exactMatch(pattern,tag):
 			vector.append(1)
 		elif sparseMatch(pattern,tag)[0]:
@@ -165,6 +211,7 @@ def get_pattern_vector(f,sortedPatternDict,HFWdict,CWdict,keylist):
 			vector.append(incomMatch(pattern,tag)[1])
 		else:
 			vector.append(0)
+	return vector
 
 
 def set_features(patternDict,HFWdict,CWdict):
@@ -175,13 +222,17 @@ def set_features(patternDict,HFWdict,CWdict):
 	for ironicFile in ironic:
 		if ironicFile.endswith('.txt'): 
 			f = open('corpus/Ironic/' + ironicFile)
-			patternVector = get_pattern_vector(f,sortedPatternDict,HFWdict,CWdict,keylist)
+			patternVector = get_pattern_vector(f,patternDict,HFWdict,CWdict,keylist)
 			corpus_list.append(patternVector)
 	for regularFile in regular:	
 		if regularFile.endswith('.txt'):
 			f = open('corpus/Regular/' + regularFile)
-			patternVector = get_pattern_vector(f,sortedPatternDict,HFWdict,CWdict,keylist)
+			patternVector = get_pattern_vector(f,patternsDict,HFWdict,CWdict,keylist)
 			corpus_list.append(patternVector)
 	return corpus_list
 
 
+HFWdict,CWdict=constructDict()
+patternsDict = findPatterns(HFWdict,CWdict)
+corpus_pattern_features = set_features(patternsDict,HFWdict,CWdict)
+np.save('corpus_pattern_features',corpus_pattern_features)
