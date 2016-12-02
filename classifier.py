@@ -8,32 +8,7 @@ import numpy as np
 import random
 from keras.regularizers import *
 
-Xs = np.load('corpus_list.npy')
-#n = max(map(len, X))
-n = 300
-def add_comp(vec):
-    return np.append(vec, [1])
-def add_dim(sample):
-    return map(add_comp, sample)
-Xs = map(add_dim, Xs)
-def resize(sample):
-    if len(sample) > n:
-        return sample[:n]
-    if len(sample) < n:
-        res = np.concatenate((sample, np.zeros((n-len(sample),len(sample[0])))))
-        return res
-
-Xs = filter(lambda k : len(k), Xs)
-Xs = np.array(map(resize, Xs))
-ys = np.load('label_list.npy')
-Xs, ys = zip(*filter(lambda (j,k) : j is not None, zip(Xs, ys)))
-Xs = np.array(Xs)
-ys = np.array(ys)
-
-for i, thing in enumerate(Xs):
-    assert np.shape(thing) == (300, 27)
-
-n, l, d = np.shape(Xs)
+execfile('data_test.py')
 
 def test0():
     model = Sequential()
@@ -57,10 +32,10 @@ def test1():
 def test2():
     model = Sequential()
     model.add(GaussianDropout(0.02, input_shape = (l, d)))
-    model.add(Bidirectional(LSTM(10, return_sequences = True, consume_less='gpu'),
+    model.add(Bidirectional(GRU(10, return_sequences = True, consume_less='gpu'),
                             merge_mode = 'concat'))
     model.add(Dropout(0.1))
-    model.add(LSTM(1, consume_less = 'gpu', return_sequences = True))
+    model.add(GRU(1, consume_less = 'gpu', return_sequences = True))
     model.add(Flatten())
     model.add(Dropout(0.1))
     model.add(Dense(10, activation = 'relu'))
@@ -88,7 +63,6 @@ def test4(depth = 2): #deep BD GRU
         bck = GRU(20, return_sequences = True, consume_less = 'gpu', go_backwards = True,
                   dropout_W = 0.2, dropout_U = 0.2)(prev)
         return condenser(merge([fwd, bck], mode = 'concat'))
-
     inputs = Input(shape=(l,d))
     next = inputs
     for i in range(depth):
@@ -97,10 +71,6 @@ def test4(depth = 2): #deep BD GRU
     pred = Dense(1, activation = 'sigmoid')(summary)
     return Model(input = inputs, output = pred)
 
-data = list(zip(Xs, ys))
-random.shuffle(data)
-Xtr, ytr = map(np.array,zip(*data[:1024]))
-Xte, yte = map(np.array,zip(*data[1024:]))
 
 RMS = RMSprop(lr = 0.001)
 
@@ -108,5 +78,5 @@ model = test2()
 model.compile(optimizer = RMS,
               loss='binary_crossentropy',
               metrics=['binary_accuracy', 'fbeta_score'])
-    
+
 model.fit(Xtr, ytr, nb_epoch=1000, batch_size=1024, validation_data = (Xte, yte))

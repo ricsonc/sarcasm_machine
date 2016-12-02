@@ -28,7 +28,7 @@ def stack(Xslist):
         samples_.append(np.array(map(np.concatenate,zip(*sample))))
     return np.array(samples_)
     
-def load_files(Xfile_list, yfile, n = 20):
+def load_files(Xfile_list, yfile, n):
     Xslist = []
     for file in Xfile_list:
         Xs = np.load(file)
@@ -40,21 +40,24 @@ def load_files(Xfile_list, yfile, n = 20):
         Xslist.append(Xs)
     return (stack(Xslist), np.load(yfile))
 
-Xs, ys = load_files(['corpus_list_fixed.npy',
-                     'corpus_list_bigram_fixed.npy',
-                     'corpus_list_trigram_fixed.npy',
-                     'corpus_list_polarity_word_fixed.npy'],
-                    'label_list.npy',
-                    300)
+Xs, ys = load_files(['twitter_corpus_vecinp_fixed.npy'],
+                    'twitter_corpus_label_fixed.npy',
+                    30)
 
 print np.shape(Xs)
 print np.shape(ys)
 
 data = list(zip(Xs, ys))
 random.shuffle(data)
-K0 = 1000
-K1 = 1100
+K0 = 400000
+K1 = 440000
 Xtr, ytr = map(np.array,zip(*data[:K0]))
 n, l, d = np.shape(Xtr)
 Xv, yv = map(np.array,zip(*data[K0:K1]))
 Xte, yte = map(np.array,zip(*data[K1:]))
+
+print sum(ys), float(sum(ys))/len(ys)
+del ys
+del Xs
+
+print 'loaded'

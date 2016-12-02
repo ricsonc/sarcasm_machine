@@ -1,6 +1,5 @@
 #!/usr/bin/env python2
 
-
 import numpy as np
 corpus = np.load('corpus_list.npy')
 corpus_bigram = np.load('corpus_list_bigram.npy')
