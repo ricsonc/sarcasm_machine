@@ -164,27 +164,3 @@ while 1:
 
 print model.evaluate(Xte,yte)
     
-'''
-test5 (110):
-loss: 0.3301 - binary_accuracy: 0.8513 - fbeta_score: 0.7471
-val_loss: 0.3312 - val_binary_accuracy: 0.8501 - val_fbeta_score: 0.7388
-
-test2fast (20):
-loss: 0.3535 - binary_accuracy: 0.8384 - fbeta_score: 0.7203
-val_loss: 0.3746 - val_binary_accuracy: 0.8273 - val_fbeta_score: 0.7260
-
-test3 (200?):
-loss: 0.2515 - binary_accuracy: 0.8951 - fbeta_score: 0.8253
-val_loss: 0.2902 - val_binary_accuracy: 0.8886 - val_fbeta_score: 0.8254
-
-large:
-
-
-logistic
-val : 0.7275
-tra : 0.72603
-
-forest
-val : 0.94965
-tra : 0.991745
-'''
